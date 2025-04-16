@@ -49,7 +49,12 @@ function ProductImageUpload({
     setImageLoadingState(true);
     const data = new FormData();
     data.append("my_file", imageFile);
-    const response = await http.post("/api/admin/products/upload-image", data);
+    console.log(data.get("my_file"), imageFile instanceof File);
+    const response = await http.post("/api/admin/products/upload-image", data, {
+      headers: {
+        "Content-Type": "multipart/form-data", // ✅ force proper content-type
+      },
+    });
     console.log(response, "response");
 
     if (response?.data?.success) {

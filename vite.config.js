@@ -13,6 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
+        // target: "http://localhost:5000/api",
         target: "https://be-orcin-three.vercel.app/api",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
