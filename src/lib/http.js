@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Tạo một instance của axios
 const http = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_URL, // ✅ Đổi URL này theo backend của bạn
+  // baseURL: import.meta.env.VITE_SERVER_URL, // ✅ Đổi URL này theo backend của bạn
   timeout: 10000, // 10 giây
   headers: {
     "Content-Type": "application/json",
