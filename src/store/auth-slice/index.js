@@ -47,21 +47,16 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-export const checkAuth = createAsyncThunk(
-  "/auth/checkauth",
+export const checkAuth = createAsyncThunk("/auth/checkauth", async () => {
+  const response = await http.get("/api/auth/check-auth", {
+    withCredentials: true,
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    },
+  });
 
-  async () => {
-    const response = await http.get("/api/auth/check-auth", {
-      withCredentials: true,
-      headers: {
-        "Cache-Control":
-          "no-store, no-cache, must-revalidate, proxy-revalidate",
-      },
-    });
-
-    return response.data;
-  }
-);
+  return response.data;
+});
 
 const authSlice = createSlice({
   name: "auth",
