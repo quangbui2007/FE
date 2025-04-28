@@ -24,7 +24,7 @@ export const fetchCartItems = createAsyncThunk(
   async (userId) => {
     try {
       console.log("start get cart")
-      const response = await axios.get(`/api/shop/cart/get/${userId}`);
+      const response = await http.get(`/api/shop/cart/get/${userId}`);
       return response.data;
     } catch (error) {
       console.log({ error });
@@ -35,7 +35,7 @@ export const fetchCartItems = createAsyncThunk(
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
   async ({ userId, productId }) => {
-    const response = await axios.delete(
+    const response = await http.delete(
       `/api/shop/cart/${userId}/${productId}`
     );
 
@@ -46,7 +46,7 @@ export const deleteCartItem = createAsyncThunk(
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
   async ({ userId, productId, quantity }) => {
-    const response = await axios.put("/api/shop/cart/update-cart", {
+    const response = await http.put("/api/shop/cart/update-cart", {
       userId,
       productId,
       quantity,
