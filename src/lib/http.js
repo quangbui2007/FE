@@ -1,6 +1,6 @@
 // axiosInstance.js
-import axios from 'axios';
-
+import axios from "axios";
+let isSessionExpired = false;
 let isRefreshing = false;
 let refreshSubscribers = [];
 
@@ -21,10 +21,13 @@ http.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     // Nếu bị 401 (token hết hạn) và chưa retry
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+
+      if (isSessionExpired) {
+        return Promise.reject(error); // ⛔️ Không retry gì nữa nếu session đã hết
+      }
 
       if (isRefreshing) {
         return new Promise((resolve) => {
@@ -37,16 +40,18 @@ http.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await http.post('/refresh-token'); // server sẽ set lại access token vào cookie
-
+        await http.post("/api/auth/refresh-token"); // server sẽ set lại access token vào cookie
+        isSessionExpired = false;
         isRefreshing = false;
         onRefreshed();
 
         return http(originalRequest); // Gọi lại request cũ sau khi đã refresh
       } catch (err) {
+        isSessionExpired = true;
         isRefreshing = false;
         refreshSubscribers = [];
-        window.location.href = '/login';
+        await http.post("/api/auth/logout"); // Đăng xuất người dùng nếu refresh token không thành công
+        window.location.href = "/login";
         // Có thể redirect về login ở đây
         return Promise.reject(err);
       }
