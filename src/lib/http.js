@@ -1,42 +1,55 @@
-import axios from "axios";
+// axiosInstance.js
+import axios from 'axios';
 
-// Tạo một instance của axios
+let isRefreshing = false;
+let refreshSubscribers = [];
+
 const http = axios.create({
-  // baseURL: import.meta.env.VITE_SERVER_URL, // ✅ Đổi URL này theo backend của bạn
-  timeout: 10000, // 10 giây
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
+  withCredentials: true, // 👈 Bắt buộc để gửi cookie
 });
 
-// Request interceptor
-http.interceptors.request.use(
-  (config) => {
-    // 👇 Add token nếu cần
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
 
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+const onRefreshed = () => {
+  refreshSubscribers.forEach((callback) => callback());
+  refreshSubscribers = [];
+};
 
-// Response interceptor
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // 👇 Xử lý lỗi toàn cục nếu cần
-    if (error.response) {
-      console.error("API Error:", error.response.status, error.response.data);
-      if (error.response.status === 401) {
-        // Ví dụ: redirect to login
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Nếu bị 401 (token hết hạn) và chưa retry
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh(() => {
+            resolve(http(originalRequest));
+          });
+        });
       }
-    } else {
-      console.error("Network Error:", error.message);
+
+      isRefreshing = true;
+
+      try {
+        await http.post('/refresh-token'); // server sẽ set lại access token vào cookie
+
+        isRefreshing = false;
+        onRefreshed();
+
+        return http(originalRequest); // Gọi lại request cũ sau khi đã refresh
+      } catch (err) {
+        isRefreshing = false;
+        refreshSubscribers = [];
+        window.location.href = '/login';
+        // Có thể redirect về login ở đây
+        return Promise.reject(err);
+      }
     }
 
     return Promise.reject(error);
