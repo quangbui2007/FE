@@ -1,9 +1,10 @@
 import http from "@/lib/http";
+import { setLoading } from "@/store/common-slice";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isAuthenticated: false,
-  isLoading: true,
+  isLoadingCheckAuth: true,
   user: null,
 };
 
@@ -66,43 +67,45 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
+      .addCase(registerUser.pending, (state, action) => {
+        action.asyncDispatch(setLoading(true));
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.isLoading = false;
+        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
+        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
+      .addCase(loginUser.pending, (state, action) => {
+        action.asyncDispatch(setLoading(true));
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        console.log(action);
+        action.asyncDispatch(setLoading(false));
 
-        state.isLoading = false;
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
+        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
       .addCase(checkAuth.pending, (state) => {
+        state.isLoadingCheckAuth = true;
         state.isLoading = true;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
+        state.isLoadingCheckAuth = false;
         state.isLoading = false;
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
       .addCase(checkAuth.rejected, (state, action) => {
+        state.isLoadingCheckAuth = false;
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;

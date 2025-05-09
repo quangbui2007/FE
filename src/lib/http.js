@@ -22,7 +22,7 @@ http.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     // Nếu bị 401 (token hết hạn) và chưa retry
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isSessionExpired) {
       originalRequest._retry = true;
 
       if (isSessionExpired) {
@@ -51,7 +51,7 @@ http.interceptors.response.use(
         isRefreshing = false;
         refreshSubscribers = [];
         await http.post("/api/auth/logout"); // Đăng xuất người dùng nếu refresh token không thành công
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
         // Có thể redirect về login ở đây
         return Promise.reject(err);
       }
