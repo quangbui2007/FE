@@ -3,13 +3,14 @@ import http from "@/lib/http";
 
 // GET users
 export const getUsers = createAsyncThunk("user/getAll", async () => {
-  const res = await http.get("/api/users");
+  const res = await http.get("/api/admin/users/list");
+  console.log(res)
   return res.data;
 });
 
 // ADD user
 export const addUser = createAsyncThunk("user/add", async (user) => {
-  const res = await http.post("/api/users", user);
+  const res = await http.post("/api/admin/users", user);
   return res.data;
 });
 

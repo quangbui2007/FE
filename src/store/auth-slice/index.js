@@ -23,7 +23,8 @@ export const registerUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   "/auth/login",
 
-  async (formData) => {
+  async (formData, { dispatch }) => {
+    console.log({dispatch})
     const response = await http.post("/api/auth/login", formData, {
       withCredentials: true,
     });
@@ -67,30 +68,21 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(registerUser.pending, (state, action) => {
-        action.asyncDispatch(setLoading(true));
-      })
+      .addCase(registerUser.pending, (state, action) => {})
       .addCase(registerUser.fulfilled, (state, action) => {
-        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
-      .addCase(loginUser.pending, (state, action) => {
-        action.asyncDispatch(setLoading(true));
-      })
+      .addCase(loginUser.pending, (state, action) => {})
       .addCase(loginUser.fulfilled, (state, action) => {
-        action.asyncDispatch(setLoading(false));
-
         state.user = action.payload.success ? action.payload.user : null;
         state.isAuthenticated = action.payload.success;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        action.asyncDispatch(setLoading(false));
         state.user = null;
         state.isAuthenticated = false;
       })
